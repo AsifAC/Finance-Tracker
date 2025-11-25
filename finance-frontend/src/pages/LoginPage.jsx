@@ -88,7 +88,7 @@ export default function LoginPage() {
             color: '#f0f6fc',
             marginBottom: '8px'
           }}>
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+            Welcome to Buckaroo
           </h1>
           <p style={{ color: '#8b949e', fontSize: '16px' }}>
             {isLogin ? 'Sign in to your account' : 'Sign up to get started'}

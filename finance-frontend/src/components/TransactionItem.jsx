@@ -1,11 +1,20 @@
+import { useAuth } from '../hooks/useAuth';
 import api from '../utils/api';
+import { deleteGuestTransaction } from '../utils/guestStorage';
 import PropTypes from 'prop-types';
 
 export default function TransactionItem({ transaction, refresh }) {
+  const { user } = useAuth();
+  
   const handleDelete = async () => {
     try {
-      await api.delete(`/transactions/${transaction.id}`);
-      refresh();
+      if (user?.isGuest) {
+        deleteGuestTransaction(transaction.id);
+        refresh();
+      } else {
+        await api.delete(`/transactions/${transaction.id}`);
+        refresh();
+      }
     } catch (error) {
       console.error('Error deleting transaction:', error);
       alert(error.userMessage || 'Failed to delete transaction. Please try again.');

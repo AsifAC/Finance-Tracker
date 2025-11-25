@@ -35,5 +35,9 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  if (!loading && !isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
 }

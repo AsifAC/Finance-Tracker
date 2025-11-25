@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import api from '../utils/api';
+import { saveGuestTransaction } from '../utils/guestStorage';
 import PropTypes from 'prop-types';
 
 export default function TransactionForm({ refresh }) {
+  const { user } = useAuth();
   const [form, setForm] = useState({
     amount: '',
     type: 'income',
@@ -42,11 +45,19 @@ export default function TransactionForm({ refresh }) {
     };
 
     try {
-      await api.post('/transactions', transactionData);
-      setSuccess(true);
-      setForm({ amount: '', type: 'income', category: '', description: '', transaction_date: '' });
-      refresh();
-      setTimeout(() => setSuccess(false), 3000);
+      if (user?.isGuest) {
+        saveGuestTransaction(transactionData);
+        setSuccess(true);
+        setForm({ amount: '', type: 'income', category: '', description: '', transaction_date: '' });
+        refresh();
+        setTimeout(() => setSuccess(false), 3000);
+      } else {
+        await api.post('/transactions', transactionData);
+        setSuccess(true);
+        setForm({ amount: '', type: 'income', category: '', description: '', transaction_date: '' });
+        refresh();
+        setTimeout(() => setSuccess(false), 3000);
+      }
     } catch (error) {
       setError(error.userMessage || 'Failed to add transaction. Please try again.');
     } finally {

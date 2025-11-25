@@ -7,7 +7,7 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({ email: '', password: '', name: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, signup } = useAuth();
+  const { login, signup, loginAsGuest } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -54,6 +54,13 @@ export default function LoginPage() {
 
   const handleAppleSignIn = () => {
     setError('Apple Sign In requires additional configuration. Please use Google or GitHub for now.');
+  };
+
+  const handleGuestLogin = () => {
+    const result = loginAsGuest();
+    if (result.success) {
+      navigate('/');
+    }
   };
 
   return (
@@ -333,7 +340,35 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', marginTop: '24px' }}>
+          <button
+            onClick={handleGuestLogin}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: '#21262d',
+              border: '1px solid #30363d',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              color: '#8b949e',
+              marginBottom: '16px',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => {
+              e.target.style.borderColor = '#8b949e';
+              e.target.style.color = '#f0f6fc';
+              e.target.style.background = '#272c34';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.borderColor = '#30363d';
+              e.target.style.color = '#8b949e';
+              e.target.style.background = '#21262d';
+            }}
+          >
+            Sign in as Guest
+          </button>
           <button
             onClick={() => {
               setIsLogin(!isLogin);

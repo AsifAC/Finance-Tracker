@@ -1,30 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import api from '../utils/api';
+import { getGuestTransactions, saveGuestTransaction, deleteGuestTransaction } from '../utils/guestStorage';
 import PropTypes from 'prop-types';
 
 export default function InitialNetworthForm({ onNetworthSet }) {
+  const { user } = useAuth();
   const [amount, setAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [hasInitialNetworth, setHasInitialNetworth] = useState(false);
 
-  useEffect(() => {
-    checkInitialNetworth();
-  }, []);
-
-  const checkInitialNetworth = async () => {
+  const checkInitialNetworth = useCallback(async () => {
     try {
-      const res = await api.get('/transactions');
-      const initialNetworth = res.data.find(t => t.type === 'initial_networth');
-      if (initialNetworth) {
-        setHasInitialNetworth(true);
-        setAmount(initialNetworth.amount.toString());
+      if (user?.isGuest) {
+        const transactions = getGuestTransactions();
+        const initialNetworth = transactions.find(t => t.type === 'initial_networth');
+        if (initialNetworth) {
+          setHasInitialNetworth(true);
+          setAmount(initialNetworth.amount.toString());
+        }
+      } else {
+        const res = await api.get('/transactions');
+        const initialNetworth = res.data.find(t => t.type === 'initial_networth');
+        if (initialNetworth) {
+          setHasInitialNetworth(true);
+          setAmount(initialNetworth.amount.toString());
+        }
       }
     } catch (error) {
       console.error('Error checking initial networth:', error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    checkInitialNetworth();
+  }, [checkInitialNetworth]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,20 +60,33 @@ export default function InitialNetworthForm({ onNetworthSet }) {
     };
 
     try {
-      if (hasInitialNetworth) {
-        const res = await api.get('/transactions');
-        const existing = res.data.find(t => t.type === 'initial_networth');
+      if (user?.isGuest) {
+        const transactions = getGuestTransactions();
+        const existing = transactions.find(t => t.type === 'initial_networth');
         if (existing) {
-          await api.put(`/transactions/${existing.id}`, transactionData);
+          deleteGuestTransaction(existing.id);
         }
+        saveGuestTransaction(transactionData);
+        setSuccess(true);
+        setHasInitialNetworth(true);
+        onNetworthSet();
+        setTimeout(() => setSuccess(false), 3000);
       } else {
-        await api.post('/transactions', transactionData);
+        if (hasInitialNetworth) {
+          const res = await api.get('/transactions');
+          const existing = res.data.find(t => t.type === 'initial_networth');
+          if (existing) {
+            await api.put(`/transactions/${existing.id}`, transactionData);
+          }
+        } else {
+          await api.post('/transactions', transactionData);
+        }
+        
+        setSuccess(true);
+        setHasInitialNetworth(true);
+        onNetworthSet();
+        setTimeout(() => setSuccess(false), 3000);
       }
-      
-      setSuccess(true);
-      setHasInitialNetworth(true);
-      onNetworthSet();
-      setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
       setError(error.userMessage || 'Failed to set initial networth');
     } finally {

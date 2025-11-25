@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../utils/api';
+import { getGuestTransactions } from '../utils/guestStorage';
 import TransactionList from '../components/TransactionList';
 import TransactionForm from '../components/TransactionForm';
 import InitialNetworthForm from '../components/InitialNetworthForm';
@@ -13,29 +14,41 @@ export default function Dashboard() {
   const [transactions, setTransactions] = useState([]);
 
   const fetchTransactions = async () => {
-    try {
-      const res = await api.get('/transactions');
-      setTransactions(res.data);
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
+    if (user?.isGuest) {
+      const guestTransactions = getGuestTransactions();
+      setTransactions(guestTransactions);
+    } else {
+      try {
+        const res = await api.get('/transactions');
+        setTransactions(res.data);
+      } catch (error) {
+        console.error('Error fetching transactions:', error);
+      }
     }
   };
 
   useEffect(() => {
     let isMounted = true;
     const loadTransactions = async () => {
-      try {
-        const res = await api.get('/transactions');
+      if (user?.isGuest) {
+        const guestTransactions = getGuestTransactions();
         if (isMounted) {
-          setTransactions(res.data);
+          setTransactions(guestTransactions);
         }
-      } catch (error) {
-        console.error('Error fetching transactions:', error);
+      } else {
+        try {
+          const res = await api.get('/transactions');
+          if (isMounted) {
+            setTransactions(res.data);
+          }
+        } catch (error) {
+          console.error('Error fetching transactions:', error);
+        }
       }
     };
     loadTransactions();
     return () => { isMounted = false; };
-  }, []);
+  }, [user]);
 
   const summary = useMemo(() => {
     const income = transactions
@@ -90,7 +103,7 @@ export default function Dashboard() {
               fontSize: '16px',
               color: '#6b7280'
             }}>
-              Welcome back, {user?.name || user?.email}!
+              {user?.isGuest ? 'Guest Mode - Data stored locally' : `Welcome back, ${user?.name || user?.email}!`}
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

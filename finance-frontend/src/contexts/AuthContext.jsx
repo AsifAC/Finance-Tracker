@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import api from '../utils/api';
 import { AuthContext } from './AuthContext.js';
@@ -29,7 +29,20 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      if (token) {
+      if (localStorage.getItem('guestMode') === 'true') {
+        const guestUser = {
+          id: 'guest',
+          email: 'guest@example.com',
+          name: 'Guest',
+          isGuest: true
+        };
+        setUser(guestUser);
+        setToken('guest');
+        setLoading(false);
+        return;
+      }
+
+      if (token && token !== 'guest') {
         try {
           const response = await api.get('/auth/me');
           setUser(response.data.user);
@@ -48,7 +61,7 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, [token]);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
       setToken(response.data.token);
@@ -60,9 +73,9 @@ export const AuthProvider = ({ children }) => {
         error: error.userMessage || 'Login failed. Please try again.'
       };
     }
-  };
+  }, []);
 
-  const signup = async (email, password, name) => {
+  const signup = useCallback(async (email, password, name) => {
     try {
       const response = await api.post('/auth/signup', { email, password, name });
       setToken(response.data.token);
@@ -74,27 +87,48 @@ export const AuthProvider = ({ children }) => {
         error: error.userMessage || 'Signup failed. Please try again.'
       };
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const loginAsGuest = useCallback(() => {
+    const guestUser = {
+      id: 'guest',
+      email: 'guest@example.com',
+      name: 'Guest',
+      isGuest: true
+    };
+    setUser(guestUser);
+    setToken('guest');
+    localStorage.setItem('guestMode', 'true');
+    return { success: true };
+  }, []);
+
+  const logout = useCallback(async () => {
     try {
-      await api.post('/auth/logout');
+      if (user?.isGuest) {
+        localStorage.removeItem('guestTransactions');
+        localStorage.removeItem('guestMode');
+      } else {
+        await api.post('/auth/logout');
+      }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       setToken(null);
       setUser(null);
+      localStorage.removeItem('guestMode');
+      localStorage.removeItem('guestTransactions');
     }
-  };
+  }, [user]);
 
   const value = useMemo(() => ({
     user,
     loading,
     login,
     signup,
+    loginAsGuest,
     logout,
     isAuthenticated: !!user
-  }), [user, loading]);
+  }), [user, loading, login, signup, loginAsGuest, logout]);
 
   return (
     <AuthContext.Provider value={value}>

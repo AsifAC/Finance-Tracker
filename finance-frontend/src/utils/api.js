@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.DEV 
   ? '/api'
-  : (import.meta.env.VITE_API_URL || 'http://localhost:5000');
+  : (import.meta.env.VITE_API_URL || 'http://localhost:5001');
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -31,7 +31,7 @@ api.interceptors.response.use(
     console.error('API Response Error:', error);
     
     if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
-      error.userMessage = 'Cannot connect to backend server. Please make sure the backend is running on http://localhost:5000';
+      error.userMessage = 'Cannot connect to backend server. Please make sure the backend is running on http://localhost:5001';
     } else if (error.code === 'ETIMEDOUT') {
       error.userMessage = 'Request timed out. Please check your connection and try again.';
     } else if (error.response) {

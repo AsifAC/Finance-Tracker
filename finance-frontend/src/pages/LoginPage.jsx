@@ -354,17 +354,20 @@ export default function LoginPage() {
               cursor: 'pointer',
               color: '#8b949e',
               marginBottom: '16px',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              textShadow: '0 0 10px rgba(139, 148, 158, 0.5), 0 0 20px rgba(139, 148, 158, 0.3)'
             }}
             onMouseOver={(e) => {
               e.target.style.borderColor = '#8b949e';
               e.target.style.color = '#f0f6fc';
               e.target.style.background = '#272c34';
+              e.target.style.textShadow = '0 0 15px rgba(240, 246, 252, 0.8), 0 0 30px rgba(240, 246, 252, 0.5), 0 0 45px rgba(240, 246, 252, 0.3)';
             }}
             onMouseOut={(e) => {
               e.target.style.borderColor = '#30363d';
               e.target.style.color = '#8b949e';
               e.target.style.background = '#21262d';
+              e.target.style.textShadow = '0 0 10px rgba(139, 148, 158, 0.5), 0 0 20px rgba(139, 148, 158, 0.3)';
             }}
           >
             Sign in as Guest

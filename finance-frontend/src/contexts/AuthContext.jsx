@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import api from '../utils/api';
-import { AuthContext } from './AuthContext';
+import { AuthContext } from './AuthContext.js';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -55,9 +55,9 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data.user);
       return { success: true };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.userMessage || 'Login failed. Please try again.' 
+      return {
+        success: false,
+        error: error.userMessage || 'Login failed. Please try again.'
       };
     }
   };
@@ -69,9 +69,9 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data.user);
       return { success: true };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.userMessage || 'Signup failed. Please try again.' 
+      return {
+        success: false,
+        error: error.userMessage || 'Signup failed. Please try again.'
       };
     }
   };
@@ -96,7 +96,11 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: !!user
   }), [user, loading]);
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 AuthProvider.propTypes = {

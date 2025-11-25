@@ -1,5 +1,7 @@
 # Buckaroo - Personal Finance Tracker
 
+🌐 **Live Demo**: [finance-tracker-omega-brown.vercel.app](https://finance-tracker-omega-brown.vercel.app)
+
 A modern, full-stack personal finance tracking application built with React and Node.js. Track your income, expenses, networth, and spending patterns with beautiful visualizations.
 
 ## Features
@@ -222,7 +224,7 @@ The app can be deployed to:
 
 ## License
 
-ISC
+Licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for details.
 
 ## Contributing
 
